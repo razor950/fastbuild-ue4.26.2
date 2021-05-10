@@ -737,8 +737,15 @@ bool Process::ReadAllData( AString & outMem,
         const uint32_t spaceInBuffer = ( buffer.GetReserved() - buffer.GetLength() );
         if ( spaceInBuffer == 0 )
         {
+#if 0
             // Expand buffer for new data in large chunks
-            const uint32_t newBufferSize = ( buffer.GetReserved() + ( 16 * MEGABYTE ) );
+            const uint32_t newBufferSize = Math::Max< uint32_t >( newSize, buffer.GetReserved() + ( 16 * MEGABYTE ) );
+#else
+            // NOTE (DKO): reduced to 2MB to avoid wasting too much memory. With 32 cores, this used to consume
+            // at least 32 * 2 * 16MB = 1GB from ObjectNode::CompileHelper::SpawnCompiler via ReadAllData
+            // for instance
+            const uint32_t newBufferSize = Math::Max< uint32_t >( newSize, buffer.GetReserved() + ( 2 * MEGABYTE ) );
+#endif
             buffer.SetReserved( newBufferSize );
         }
 
